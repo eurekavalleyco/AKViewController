@@ -30,14 +30,14 @@ extension UIViewAnimationCurve {
 
 // MARK: - AKViewController
 
-class AKViewController: UIViewController, UITextFieldDelegate {
+class AKViewController: UIViewController {
     
     // MARK: - Public API
     
     // MARK: • IBOutlets
     
     @IBOutlet var scrollView: UIScrollView!
-    @IBOutlet var constraintContentSizeBottom: NSLayoutConstraint!
+    @IBOutlet var contentView: UIView!
     
     // MARK: • Variables
     
@@ -47,7 +47,21 @@ class AKViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: • IBOutlets
     
-    @IBOutlet private var statusBarSize: UIView!
+    lazy private var statusBarView: AKView! = {
+        let statusBarView = AKView.init()
+        statusBarView.userInteractionEnabled = false
+        statusBarView.translatesAutoresizingMaskIntoConstraints = false
+        statusBarView.backgroundColor = UIColor.clearColor()
+        return statusBarView
+    }()
+    lazy private var contentSizeView: UIView! = {
+        let contentSizeView = UIView.init()
+        contentSizeView.userInteractionEnabled = false
+        contentSizeView.translatesAutoresizingMaskIntoConstraints = false
+        contentSizeView.backgroundColor = UIColor.clearColor()
+        return contentSizeView
+    }()
+    private var constraintContentSizeBottom: NSLayoutConstraint!
     
     // MARK: • Variables
     
@@ -67,14 +81,32 @@ class AKViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.view.addSubview(self.statusBarView)
+        self.view.sendSubviewToBack(self.statusBarView)
+        self.view.addConstraint(self.statusBarView.centerXAnchor.constraintEqualToAnchor(self.view.centerXAnchor))
+        self.view.addConstraint(self.statusBarView.widthAnchor.constraintEqualToAnchor(self.view.widthAnchor))
+        self.view.addConstraint(self.statusBarView.topAnchor.constraintEqualToAnchor(self.view.topAnchor))
+        self.view.addConstraint(self.statusBarView.bottomAnchor.constraintEqualToAnchor(self.topLayoutGuide.bottomAnchor))
+        
+        self.view.addSubview(self.contentSizeView)
+        self.view.sendSubviewToBack(self.contentSizeView)
+        self.view.addConstraint(self.contentSizeView.centerXAnchor.constraintEqualToAnchor(self.view.centerXAnchor))
+        self.view.addConstraint(self.contentSizeView.widthAnchor.constraintEqualToAnchor(self.view.widthAnchor))
+        self.view.addConstraint(self.contentSizeView.topAnchor.constraintEqualToAnchor(self.topLayoutGuide.bottomAnchor))
+        self.constraintContentSizeBottom = self.contentSizeView.bottomAnchor.constraintEqualToAnchor(self.bottomLayoutGuide.topAnchor)
+        self.view.addConstraint(self.constraintContentSizeBottom)
+        self.view.addConstraint(self.contentSizeView.widthAnchor.constraintLessThanOrEqualToAnchor(self.contentView.widthAnchor))
+        self.view.addConstraint(self.contentSizeView.heightAnchor.constraintLessThanOrEqualToAnchor(self.contentView.heightAnchor))
+        let constraintWidth = self.contentSizeView.widthAnchor.constraintEqualToAnchor(self.contentView.widthAnchor)
+        constraintWidth.priority = UILayoutPriorityDefaultLow
+        self.view.addConstraint(constraintWidth)
+        let constraintHeight = self.contentSizeView.heightAnchor.constraintEqualToAnchor(self.contentView.heightAnchor)
+        constraintHeight.priority = UILayoutPriorityDefaultLow
+        self.view.addConstraint(constraintHeight)
     }
     
-    // MARK: • Delegated (UITextFieldDelegate)
-    
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return false
-    }
+    // MARK: • Delegated
     
     // MARK: • Overwritten
     
@@ -119,7 +151,7 @@ class AKViewController: UIViewController, UITextFieldDelegate {
         let animationDuration = (notification.userInfo![UIKeyboardAnimationDurationUserInfoKey] as! NSNumber).doubleValue as NSTimeInterval
         
         let inset = self.view.frame.size.height-frameEnd.origin.y
-        self.constraintContentSizeBottom.constant = inset
+        self.constraintContentSizeBottom.constant = -1.0*inset
         self.view.setNeedsUpdateConstraints()
         UIView.animateWithDuration(animationDuration, delay: 0.0, options: .CurveEaseIn, animations: {
             self.view.layoutIfNeeded()
@@ -133,7 +165,7 @@ class AKViewController: UIViewController, UITextFieldDelegate {
     
     func statusBarBoundsDidChange(notification: NSNotification) {
         let view = notification.object as! UIView
-        if (!view.isEqual(self.statusBarSize)) {
+        if (!view.isEqual(self.statusBarView)) {
             return
         }
         
