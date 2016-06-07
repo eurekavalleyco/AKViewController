@@ -150,7 +150,9 @@ class AKViewController: UIViewController {
         let frameEnd = (notification.userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue).CGRectValue()
         let animationDuration = (notification.userInfo![UIKeyboardAnimationDurationUserInfoKey] as! NSNumber).doubleValue as NSTimeInterval
         
-        let inset = self.view.frame.size.height-frameEnd.origin.y
+        let statusBarHeight = UIApplication.sharedApplication().statusBarFrame.size.height
+        let tabBarHeight = (statusBarHeight > 0.0) ? (self.tabBarController?.tabBar.frame.size.height ?? 0) : 0.0
+        let inset = max(self.view.frame.size.height-frameEnd.origin.y-tabBarHeight, 0.0)
         self.constraintContentSizeBottom.constant = -1.0*inset
         self.view.setNeedsUpdateConstraints()
         UIView.animateWithDuration(animationDuration, delay: 0.0, options: .CurveEaseIn, animations: {
