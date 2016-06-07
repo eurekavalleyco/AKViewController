@@ -104,6 +104,10 @@ class AKViewController: UIViewController {
         let constraintHeight = self.contentSizeView.heightAnchor.constraintEqualToAnchor(self.contentView.heightAnchor)
         constraintHeight.priority = UILayoutPriorityDefaultLow
         self.view.addConstraint(constraintHeight)
+        
+        let tabBarHeight = self.tabBarController?.tabBar.frame.size.height ?? 0
+        self.scrollView.contentInset = UIEdgeInsets(top: self.scrollView.contentInset.top, left: self.scrollView.contentInset.left, bottom: tabBarHeight, right: self.scrollView.contentInset.right)
+        self.scrollView.scrollIndicatorInsets = UIEdgeInsets(top: self.scrollView.scrollIndicatorInsets.top, left: self.scrollView.scrollIndicatorInsets.left, bottom: tabBarHeight, right: self.scrollView.scrollIndicatorInsets.right)
     }
     
     // MARK: • Delegated
