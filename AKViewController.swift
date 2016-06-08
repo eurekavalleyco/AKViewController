@@ -135,11 +135,13 @@ class AKViewController: UIViewController {
     private func addObserversToKeyboard() {
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.keyboardDidAppear), name: UIKeyboardDidShowNotification, object: nil)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.keyboardFrameWillChange), name: UIKeyboardWillChangeFrameNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.keyboardWillDisappear), name: UIKeyboardWillHideNotification, object: nil)
     }
     
     private func removeObserversFromKeyboard() {
         NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardDidShowNotification, object: nil)
         NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardDidChangeFrameNotification, object: nil)
+        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillHideNotification, object: nil)
     }
     
     private func addObserversToStatusBar() {
@@ -159,10 +161,7 @@ class AKViewController: UIViewController {
     func keyboardFrameWillChange(notification: NSNotification) {
         let frameEnd = (notification.userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue).CGRectValue()
         let animationDuration = (notification.userInfo![UIKeyboardAnimationDurationUserInfoKey] as! NSNumber).doubleValue as NSTimeInterval
-        
-        let statusBarHeight = UIApplication.sharedApplication().statusBarFrame.size.height
-        let tabBarHeight = (statusBarHeight > 0.0) ? (self.tabBarController?.tabBar.frame.size.height ?? 0) : 0.0
-        let inset = max(self.view.frame.size.height-frameEnd.origin.y-tabBarHeight, 0.0)
+        let inset = max(self.view.frame.size.height-frameEnd.origin.y, 0.0)
         self.constraintContentSizeBottom.constant = -1.0*inset
         self.view.setNeedsUpdateConstraints()
         UIView.animateWithDuration(animationDuration, delay: 0.0, options: .CurveEaseIn, animations: {
@@ -170,6 +169,17 @@ class AKViewController: UIViewController {
             self.scrollView.contentInset = UIEdgeInsets(top: self.scrollView.contentInset.top, left: self.scrollView.contentInset.left, bottom: inset, right: self.scrollView.contentInset.right)
             self.scrollView.scrollIndicatorInsets = UIEdgeInsets(top: self.scrollView.scrollIndicatorInsets.top, left: self.scrollView.scrollIndicatorInsets.left, bottom: inset, right: self.scrollView.scrollIndicatorInsets.right)
         }, completion:nil)
+    }
+    
+    func keyboardWillDisappear(notification: NSNotification) {
+//        let frameEnd = (notification.userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue).CGRectValue()
+        let animationDuration = (notification.userInfo![UIKeyboardAnimationDurationUserInfoKey] as! NSNumber).doubleValue as NSTimeInterval
+        
+        let tabBarHeight = self.tabBarController?.tabBar.frame.size.height ?? 0
+        UIView.animateWithDuration(animationDuration, delay: 0.0, options: .CurveEaseIn, animations: {
+            self.scrollView.contentInset = UIEdgeInsets(top: self.scrollView.contentInset.top, left: self.scrollView.contentInset.left, bottom: self.scrollView.contentInset.bottom+tabBarHeight, right: self.scrollView.contentInset.right)
+            self.scrollView.scrollIndicatorInsets = UIEdgeInsets(top: self.scrollView.scrollIndicatorInsets.top, left: self.scrollView.scrollIndicatorInsets.left, bottom: self.scrollView.scrollIndicatorInsets.bottom+tabBarHeight, right: self.scrollView.scrollIndicatorInsets.right)
+            }, completion:nil)
     }
     
     func statusBarBoundsDidChange(notification: NSNotification) {
