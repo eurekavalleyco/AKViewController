@@ -133,10 +133,12 @@ class AKViewController: UIViewController {
     // MARK: • Observers
     
     private func addObserversToKeyboard() {
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.keyboardDidAppear), name: UIKeyboardDidShowNotification, object: nil)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.keyboardFrameWillChange), name: UIKeyboardWillChangeFrameNotification, object: nil)
     }
     
     private func removeObserversFromKeyboard() {
+        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardDidShowNotification, object: nil)
         NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardDidChangeFrameNotification, object: nil)
     }
     
@@ -149,6 +151,10 @@ class AKViewController: UIViewController {
     }
     
     // MARK: • Responders
+    
+    func keyboardDidAppear(notification: NSNotification) {
+        self.scrollView.flashScrollIndicators()
+    }
     
     func keyboardFrameWillChange(notification: NSNotification) {
         let frameEnd = (notification.userInfo![UIKeyboardFrameEndUserInfoKey] as! NSValue).CGRectValue()
@@ -163,10 +169,7 @@ class AKViewController: UIViewController {
             self.view.layoutIfNeeded()
             self.scrollView.contentInset = UIEdgeInsets(top: self.scrollView.contentInset.top, left: self.scrollView.contentInset.left, bottom: inset, right: self.scrollView.contentInset.right)
             self.scrollView.scrollIndicatorInsets = UIEdgeInsets(top: self.scrollView.scrollIndicatorInsets.top, left: self.scrollView.scrollIndicatorInsets.left, bottom: inset, right: self.scrollView.scrollIndicatorInsets.right)
-            }, completion: {
-                (finished: Bool) in
-                self.scrollView.flashScrollIndicators()
-        })
+        }, completion:nil)
     }
     
     func statusBarBoundsDidChange(notification: NSNotification) {
